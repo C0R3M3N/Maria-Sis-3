@@ -1,29 +1,46 @@
 #include <windows.h>
-
 #include <d3d10.h>
 #include <d3dx10.h>
+#include <vector>
+
+#include "Game.h"
+#include "debug.h"
+#include "GameObject.h"
 
 #define WINDOW_CLASS_NAME L"SimpleWindow"
 #define WINDOW_TITLE L"Maria Sis 3"
-#define WINDOW_ICON_PATH L""
+#define WINDOW_ICON_PATH L"brick.ico"
 
-HWND hWnd = 0;
+#define TEXTURE_PATH_BRICK L"enemies.png"
+#define TEXTURE_PATH_MARIO L"mario.png"
+
+#define TEXTURE_PATH_MISC L"misc.png"
+
 
 
 // Each color is from 0.0f to 1.0f  ( 0/255 to 255/255 ) 
 #define BACKGROUND_COLOR D3DXCOLOR(0.2f, 0.2f, 0.5f, 0.2f)
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+using namespace std;
 
-#define MAX_FRAME_RATE 100
+CMario* mario;
+#define MARIO_START_X 10.0f
+#define MARIO_START_Y 100.0f
+#define MARIO_START_VX 0.1f
+#define MARIO_START_VY 0.1f
 
-ID3D10Device* pD3DDevice = NULL;
-IDXGISwapChain* pSwapChain = NULL;
-ID3D10RenderTargetView* pRenderTargetView = NULL;
+CBrick* brick;
+#define BRICK_X 10.0f
+#define BRICK_Y 120.0f
 
-int BackBufferWidth = 0;
-int BackBufferHeight = 0;
+LPTEXTURE texMario = NULL;
+LPTEXTURE texBrick = NULL;
+LPTEXTURE texMisc = NULL;
+
+
+
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -38,86 +55,73 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-
-void InitDirectX(HWND hWnd)
+void LoadResources()
 {
+	CGame* game = CGame::GetInstance();
+	texBrick = game->LoadTexture(TEXTURE_PATH_BRICK);
+	texMario = game->LoadTexture(TEXTURE_PATH_MARIO);
+	texMisc = game->LoadTexture(TEXTURE_PATH_MISC);
 
-	// retrieve client area width & height so that we can create backbuffer height & width accordingly 
-	RECT r;
-	GetClientRect(hWnd, &r);
+	// Load a sprite sheet as a texture to try drawing a portion of a texture. See function Render 
+	//texMisc = game->LoadTexture(MISC_TEXTURE_PATH);
 
-	BackBufferWidth = r.right + 1;
-	BackBufferHeight = r.bottom + 1;
-
-
-	// Create & clear the DXGI_SWAP_CHAIN_DESC structure
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-
-	// Fill in the needed values
-	swapChainDesc.BufferCount = 1;
-	swapChainDesc.BufferDesc.Width = BackBufferWidth;
-	swapChainDesc.BufferDesc.Height = BackBufferHeight;
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.OutputWindow = hWnd;
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.SampleDesc.Quality = 0;
-	swapChainDesc.Windowed = TRUE;
-
-	HRESULT hr = S_OK;
-
-	// Create the D3D device and the swap chain
-	hr = D3D10CreateDeviceAndSwapChain(NULL,
-		D3D10_DRIVER_TYPE_HARDWARE,
-		NULL,
-		0,
-		D3D10_SDK_VERSION,
-		&swapChainDesc,
-		&pSwapChain,
-		&pD3DDevice);
+	mario = new CMario(MARIO_START_X, MARIO_START_Y, MARIO_START_VX, MARIO_START_VY, texMario);
+	brick = new CBrick(BRICK_X, BRICK_Y, texBrick);
 
 
+	// objects.push_back(mario);
+	// for(i)		 
+	//		objects.push_back(new CGameObject(BRICK_X+i*BRICK_WIDTH,....);
+	//
 
-	// Get the back buffer from the swapchain
-	ID3D10Texture2D* pBackBuffer;
-	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (LPVOID*)&pBackBuffer);
+	//
+	// int x = BRICK_X;
+	// for(i)
+	//		... new CGameObject(x,.... 
+	//		x+=BRICK_WIDTH;
+}
 
+void Update(DWORD dt)
+{
+	/*
+	for (int i=0;i<n;i++)
+		objects[i]->Update(dt);
+	*/
 
-	// create the render target view
-	hr = pD3DDevice->CreateRenderTargetView(pBackBuffer, NULL, &pRenderTargetView);
+	mario->Update(dt);
+	brick->Update(dt);
 
-	// release the back buffer
-	pBackBuffer->Release();
-
-
-
-	// set the render target
-	pD3DDevice->OMSetRenderTargets(1, &pRenderTargetView, NULL);
-
-	// create and set the viewport
-	D3D10_VIEWPORT viewPort;
-	viewPort.Width = BackBufferWidth;
-	viewPort.Height = BackBufferHeight;
-	viewPort.MinDepth = 0.0f;
-	viewPort.MaxDepth = 1.0f;
-	viewPort.TopLeftX = 0;
-	viewPort.TopLeftY = 0;
-	pD3DDevice->RSSetViewports(1, &viewPort);
-
-
-	return;
+	//DebugOutTitle(L"01 - Skeleton %0.1f, %0.1f", mario->GetX(), mario->GetY());
 }
 
 void Render()
 {
+	CGame* g = CGame::GetInstance();
+
+	ID3D10Device* pD3DDevice = g->GetDirect3DDevice();
+	IDXGISwapChain* pSwapChain = g->GetSwapChain();
+	ID3D10RenderTargetView* pRenderTargetView = g->GetRenderTargetView();
+	ID3DX10Sprite* spriteHandler = g->GetSpriteHandler();
+
 	if (pD3DDevice != NULL)
 	{
-		// clear the target buffer
+		// clear the background 
 		pD3DDevice->ClearRenderTargetView(pRenderTargetView, BACKGROUND_COLOR);
 
+		spriteHandler->Begin(D3DX10_SPRITE_SORT_TEXTURE);
+
+		// Use Alpha blending for transparent sprites
+		FLOAT NewBlendFactor[4] = { 0,0,0,0 };
+		pD3DDevice->OMSetBlendState(g->GetAlphaBlending(), NewBlendFactor, 0xffffffff);
+
+		brick->Render();
+		mario->Render();
+
+		// Uncomment this line to see how to draw a porttion of a texture  
+		//g->Draw(10, 10, texMisc, 300, 117, 317, 134);
+		//g->Draw(10, 10, texMario, 215, 120, 234, 137);
+
+		spriteHandler->End();
 		pSwapChain->Present(0, 0);
 	}
 }
@@ -193,6 +197,7 @@ int Run()
 		if (dt >= tickPerFrame)
 		{
 			frameStart = now;
+			Update((DWORD)dt);
 			Render();
 		}
 		else
@@ -202,25 +207,6 @@ int Run()
 	return 1;
 }
 
-void Cleanup()
-{
-	// release the rendertarget
-	if (pRenderTargetView)
-	{
-		pRenderTargetView->Release();
-	}
-	// release the swapchain
-	if (pSwapChain)
-	{
-		pSwapChain->Release();
-	}
-	// release the D3D Device
-	if (pD3DDevice)
-	{
-		pD3DDevice->Release();
-	}
-
-}
 
 int WINAPI WinMain(
 	_In_ HINSTANCE hInstance,
@@ -229,13 +215,16 @@ int WINAPI WinMain(
 	_In_ int nCmdShow
 )
 {
-	hWnd = CreateGameWindow(hInstance, nCmdShow, WINDOW_WIDTH, WINDOW_HEIGHT);
-	if (hWnd == 0) return 0;
+	HWND hWnd = CreateGameWindow(hInstance, nCmdShow, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	InitDirectX(hWnd);
+	CGame* game = CGame::GetInstance();
+	game->Init(hWnd);
+	SetWindowPos(hWnd, 0, 0, 0, SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+
+	LoadResources();
 
 	Run();
-	Cleanup();
 
 	return 0;
 }
