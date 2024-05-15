@@ -1,44 +1,45 @@
-#include <windows.h>
+
+#include <Windows.h>
 #include <d3d10.h>
 #include <d3dx10.h>
-#include <vector>
 
-#include "Game.h"
 #include "debug.h"
-#include "GameObject.h"
+#include "Game.h"
+#include "Textures.h"
+
+#include "Sprite.h"
+#include "Sprites.h"
+
+#include "Animation.h"
+#include "Animations.h"
+
+
+#include "Mario.h"
 
 #define WINDOW_CLASS_NAME L"SimpleWindow"
-#define WINDOW_TITLE L"Maria Sis 3"
+#define MAIN_WINDOW_TITLE L"Maria Sis 3"
 #define WINDOW_ICON_PATH L"brick.ico"
-
-#define TEXTURE_PATH_BRICK L"enemies.png"
-#define TEXTURE_PATH_MARIO L"mario.png"
-
-#define TEXTURE_PATH_MISC L"misc.png"
-
-
 
 // Each color is from 0.0f to 1.0f  ( 0/255 to 255/255 ) 
 #define BACKGROUND_COLOR D3DXCOLOR(0.2f, 0.2f, 0.5f, 0.2f)
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 
-using namespace std;
+#define ID_TEX_MARIO 0
+#define ID_TEX_ENEMY 10
+#define ID_TEX_MISC 20
+
+#define TEXTURES_DIR L"textures"
+#define TEXTURE_PATH_MARIO TEXTURES_DIR "\\mario.png"
+#define TEXTURE_PATH_MISC TEXTURES_DIR "\\misc_transparent.png"
+#define TEXTURE_PATH_ENEMIES TEXTURES_DIR "\\enemies.png"
 
 CMario* mario;
 #define MARIO_START_X 10.0f
-#define MARIO_START_Y 100.0f
+#define MARIO_START_Y 130.0f
 #define MARIO_START_VX 0.1f
-#define MARIO_START_VY 0.1f
 
 CBrick* brick;
-#define BRICK_X 10.0f
-#define BRICK_Y 120.0f
-
-LPTEXTURE texMario = NULL;
-LPTEXTURE texBrick = NULL;
-LPTEXTURE texMisc = NULL;
-
 
 
 
@@ -57,39 +58,67 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void LoadResources()
 {
-	CGame* game = CGame::GetInstance();
-	texBrick = game->LoadTexture(TEXTURE_PATH_BRICK);
-	texMario = game->LoadTexture(TEXTURE_PATH_MARIO);
-	texMisc = game->LoadTexture(TEXTURE_PATH_MISC);
+	CTextures* textures = CTextures::GetInstance();
 
-	// Load a sprite sheet as a texture to try drawing a portion of a texture. See function Render 
-	//texMisc = game->LoadTexture(MISC_TEXTURE_PATH);
+	textures->Add(ID_TEX_MARIO, TEXTURE_PATH_MARIO);
+	//textures->Add(ID_ENEMY_TEXTURE, TEXTURE_PATH_ENEMIES, D3DCOLOR_XRGB(156, 219, 239));
+	textures->Add(ID_TEX_MISC, TEXTURE_PATH_MISC);
 
-	mario = new CMario(MARIO_START_X, MARIO_START_Y, MARIO_START_VX, MARIO_START_VY, texMario);
-	brick = new CBrick(BRICK_X, BRICK_Y, texBrick);
+	
+	CSprites* sprites = CSprites::GetInstance();
+
+	LPTEXTURE texMario = textures->Get(ID_TEX_MARIO);
+
+	// readline => id, left, top, right 
+
+	sprites->Add(10001, 246, 154, 259, 181, texMario);
+	sprites->Add(10002, 275, 154, 290, 181, texMario);
+	sprites->Add(10003, 304, 154, 321, 181, texMario);
+
+	sprites->Add(10011, 186, 154, 200, 181, texMario);
+	sprites->Add(10012, 155, 154, 171, 181, texMario);
+	sprites->Add(10013, 125, 154, 141, 181, texMario);
+
+	CAnimations* animations = CAnimations::GetInstance();
+	LPANIMATION ani;
+
+	ani = new CAnimation(100);
+	ani->Add(10001);
+	ani->Add(10002);
+	ani->Add(10003);
+	animations->Add(500, ani);
 
 
-	// objects.push_back(mario);
-	// for(i)		 
-	//		objects.push_back(new CGameObject(BRICK_X+i*BRICK_WIDTH,....);
-	//
+	ani = new CAnimation(100);
+	ani->Add(10011);
+	ani->Add(10012);
+	ani->Add(10013);
+	animations->Add(501, ani);
 
-	//
-	// int x = BRICK_X;
-	// for(i)
-	//		... new CGameObject(x,.... 
-	//		x+=BRICK_WIDTH;
+
+	LPTEXTURE texMisc = textures->Get(ID_TEX_MISC);
+	sprites->Add(20001, 18, 52, 35, 85, texMisc);
+	sprites->Add(20002, 41, 52, 58, 85, texMisc);
+	sprites->Add(20003, 66, 52, 83, 85, texMisc);
+	sprites->Add(20004, 89, 52, 106, 85, texMisc);
+
+	ani = new CAnimation(100);
+	ani->Add(20001, 1000);
+	ani->Add(20002);
+	ani->Add(20003);
+	ani->Add(20004);
+	animations->Add(510, ani);
+
+
+	mario = new CMario(MARIO_START_X, MARIO_START_Y, MARIO_START_VX);
+	brick = new CBrick(100.0f, 100.0f);
+
 }
 
 void Update(DWORD dt)
 {
-	/*
-	for (int i=0;i<n;i++)
-		objects[i]->Update(dt);
-	*/
 
 	mario->Update(dt);
-	brick->Update(dt);
 
 	//DebugOutTitle(L"01 - Skeleton %0.1f, %0.1f", mario->GetX(), mario->GetY());
 }
@@ -152,7 +181,7 @@ HWND CreateGameWindow(HINSTANCE hInstance, int nCmdShow, int ScreenWidth, int Sc
 	HWND hWnd =
 		CreateWindow(
 			WINDOW_CLASS_NAME,
-			WINDOW_TITLE,
+			MAIN_WINDOW_TITLE,
 			WS_OVERLAPPEDWINDOW, // WS_EX_TOPMOST | WS_VISIBLE | WS_POPUP,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,

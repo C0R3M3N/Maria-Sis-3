@@ -1,8 +1,13 @@
 #pragma once
 
+#include <d3d10.h>
+#include <d3dx10.h>
 
-
-class CTexture {
+//
+// Warpper class to simplify texture manipulation. See also CGame::LoadTexture
+//
+class CTexture
+{
 protected:
 	ID3D10Texture2D* _tex;
 	ID3D10ShaderResourceView* _rsview;
@@ -16,6 +21,7 @@ public:
 		_width = -1;
 		_height = -1;
 	}
+
 	CTexture(ID3D10Texture2D* tex, ID3D10ShaderResourceView* rsview)
 	{
 		this->_tex = tex;
@@ -26,7 +32,7 @@ public:
 		this->_width = desc.Width;
 		this->_height = desc.Height;
 	}
-	
+
 	ID3D10ShaderResourceView* getShaderResourceView() { return this->_rsview; }
 
 	int getWidth() { return this->_width; }
