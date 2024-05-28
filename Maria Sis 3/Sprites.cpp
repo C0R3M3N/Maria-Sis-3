@@ -2,7 +2,6 @@
 #include "Game.h"
 #include "debug.h"
 
-
 CSprites* CSprites::__instance = NULL;
 
 CSprites* CSprites::GetInstance()

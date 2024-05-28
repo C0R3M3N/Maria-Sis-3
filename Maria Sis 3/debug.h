@@ -1,5 +1,6 @@
 #pragma once
-#include <Windows.h>
+
+#include <windows.h>
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
@@ -7,7 +8,6 @@
 #include <time.h>
 #include <stdlib.h>
 
-// DEBUG SUPPORT FUNCTIONS //////////////
 #define _W(x)  __W(x)
 #define __W(x)  L##x
 
@@ -18,19 +18,6 @@
 		va_end(argp);				\
 }
 
-//
-// Print formatted string (similar to printf) to debug console
-//
 void DebugOut(const wchar_t* fmt, ...);
-
-//
-// Print formatted string (similar to printf) to a target window
-// This function is very useful to view live value of variables
-// To set target window, use SetDebugWindow
-//
 void DebugOutTitle(const wchar_t* fmt, ...);
-
-//
-// Set target window for DebugOutTitle
-//
 void SetDebugWindow(HWND hwnd);
