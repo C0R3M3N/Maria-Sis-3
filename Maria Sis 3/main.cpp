@@ -15,6 +15,7 @@
 
 
 #include "Mario.h"
+#include "Brick.h"
 
 #define WINDOW_CLASS_NAME L"SimpleWindow"
 #define MAIN_WINDOW_TITLE L"Maria Sis 3"

@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Mario.h"
+#include "Brick.h"
 
 #include "Animation.h"
 #include "Animations.h"
