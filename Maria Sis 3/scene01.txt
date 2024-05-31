@@ -4,6 +4,7 @@ mario.txt
 brick.txt
 coin.txt
 goomba.txt
+koopas.txt
 cloud.txt
 #
 [OBJECTS]
@@ -17,6 +18,8 @@ cloud.txt
 # BRICKS
 1	0	148
 1	0	164
+
+#1	0	0
 
 1	0	180
 1	16	180
@@ -54,9 +57,12 @@ cloud.txt
 
 #Goomba
 2	300	10
+#2	200	20
+# Koopas
+3	200	20
 
 #Platform
-5	90	136	16	15	16	51000	52000	53000
+5	90	136	16	15	15	51000	52000	53000
 5	120	90	16	16	8	20001	20001	20001
 
 #Portal 
