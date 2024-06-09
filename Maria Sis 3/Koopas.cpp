@@ -5,7 +5,7 @@ CKoopas::CKoopas(float x, float y) :CGameObject(x, y)
 	this->ax = 0;
 	this->ay = KOOPA_GRAVITY;
 	die_start = -1;
-	SetState(KOOPA_STATE_WALKING);
+	SetState(KOOPA_STATE_WALKING_LEFT);
 }
 
 void CKoopas::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -65,11 +65,24 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CKoopas::Render()
 {
-	int aniId = ID_ANI_KOOPA_WALKING_RIGHT;
+	int aniId = ID_ANI_KOOPA_WALKING_LEFT;
 	if (state == KOOPA_STATE_DIE)
 	{
 		aniId = ID_ANI_KOOPA_DIE;
 	}
+	else if (vx < 0)
+	{
+		aniId = ID_ANI_KOOPA_WALKING_LEFT;
+	}
+	else {
+		aniId = ID_ANI_KOOPA_WALKING_RIGHT;
+	}
+	/*else if (state == KOOPA_STATE_WALKING_LEFT) {
+		aniId = ID_ANI_KOOPA_WALKING_LEFT;
+	}
+	else if (state == KOOPA_STATE_WALKING_RIGHT) {
+		aniId = ID_ANI_KOOPA_WALKING_RIGHT;
+	}*/
 
 	CAnimations::GetInstance()->Get(aniId)->Render(x, y);
 	RenderBoundingBox();
@@ -87,8 +100,13 @@ void CKoopas::SetState(int state)
 		vy = 0;
 		ay = 0;
 		break;
-	case KOOPA_STATE_WALKING:
+	case KOOPA_STATE_WALKING_LEFT:
 		vx = -KOOPA_WALKING_SPEED;
+		nx = -1;
+		break;
+	case KOOPA_STATE_WALKING_RIGHT:
+		vx = -KOOPA_WALKING_SPEED;
+		nx = 1;
 		break;
 	}
 }
