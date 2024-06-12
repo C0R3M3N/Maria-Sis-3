@@ -96,17 +96,33 @@ void CMario::OnCollisionWithGoomba(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithKoopas(LPCOLLISIONEVENT e)
 {
 	CKoopas* koopas = dynamic_cast<CKoopas*>(e->obj);
-
-	// jump on top >> kill Goomba and deflect a bit 
+	if (koopas->GetState() == KOOPA_STATE_HYPE)
+	{
+		if (e->nx < 0) {
+			//if(mario->getstate(MARIO_STATE_HOLD_KOOPA)) { KOOPA_STATE_HOLD_ONHAND_RIGHT} else
+			koopas->SetState(KOOPA_STATE_HYPE_FAST_RIGHT);
+			DebugOut(L"Go RIGHT\n");
+		}
+		else if (e->nx > 0) {
+			//if( B button hold) { KOOPA_STATE_HOLD_ONHAND_LEFT} else
+			koopas->SetState(KOOPA_STATE_HYPE_FAST_LEFT);
+			DebugOut(L"Go LEFT\n");
+		}
+		if (e->ny < 0)
+		{
+			koopas->SetState(KOOPA_STATE_HYPE_FAST_LEFT);
+		}
+	} 
+	else
 	if (e->ny < 0)
 	{
 		if (koopas->GetState() != KOOPA_STATE_DIE)
 		{
-			koopas->SetState(KOOPA_STATE_DIE);
+			koopas->SetState(KOOPA_STATE_HYPE);
 			vy = -MARIO_JUMP_DEFLECT_SPEED;
 		}
 	}
-	else // hit by Goomba
+	else // hit by Koopas
 	{
 		if (untouchable == 0)
 		{

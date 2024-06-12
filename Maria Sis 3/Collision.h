@@ -48,38 +48,38 @@ class CCollision
 	static CCollision* __instance;
 public:
 	static void SweptAABB(
-		float ml,			// move left 
-		float mt,			// move top
-		float mr,			// move right 
-		float mb,			// move bottom
-		float dx,			// 
-		float dy,			// 
-		float sl,			// static left
-		float st,
-		float sr,
-		float sb,
-		float& t,
-		float& nx,
-		float& ny);
+			float ml,			// move left 
+			float mt,			// move top
+			float mr,			// move right 
+			float mb,			// move bottom
+			float dx,			// 
+			float dy,			// 
+			float sl,			// static left
+			float st,
+			float sr,
+			float sb,
+			float& t,
+			float& nx,
+			float& ny);
 
 	LPCOLLISIONEVENT SweptAABB(
-		LPGAMEOBJECT objSrc,
-		DWORD dt,
-		LPGAMEOBJECT objDest);
+			LPGAMEOBJECT objSrc,
+			DWORD dt,
+			LPGAMEOBJECT objDest);
 	void Scan(
-		LPGAMEOBJECT objSrc,
-		DWORD dt,
-		vector<LPGAMEOBJECT>* objDests,
-		vector<LPCOLLISIONEVENT>& coEvents);
+			LPGAMEOBJECT objSrc,
+			DWORD dt,
+			vector<LPGAMEOBJECT>* objDests,
+			vector<LPCOLLISIONEVENT>& coEvents);
 
 	void Filter(
-		LPGAMEOBJECT objSrc,
-		vector<LPCOLLISIONEVENT>& coEvents,
-		LPCOLLISIONEVENT& colX,
-		LPCOLLISIONEVENT& colY,
-		int filterBlock,
-		int filterX,
-		int filterY);
+			LPGAMEOBJECT objSrc,
+			vector<LPCOLLISIONEVENT>& coEvents,
+			LPCOLLISIONEVENT& colX,
+			LPCOLLISIONEVENT& colY,
+			int filterBlock,
+			int filterX,
+			int filterY);
 
 	void Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 

@@ -10,7 +10,7 @@ CKoopas::CKoopas(float x, float y) :CGameObject(x, y)
 
 void CKoopas::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
-	if (state == KOOPA_STATE_DIE)
+	if (state == KOOPA_STATE_HYPE || state == KOOPA_STATE_HYPE_FAST_LEFT || state == KOOPA_STATE_HYPE_FAST_RIGHT)
 	{
 		left = x - KOOPA_BBOX_WIDTH / 2;
 		top = y - KOOPA_BBOX_HEIGHT_DIE / 2;
@@ -57,6 +57,12 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		isDeleted = true;
 		return;
 	}
+	if ((state == KOOPA_STATE_HYPE) && (GetTickCount64() - hype_start > KOOPA_HYPE_TIMEOUT))
+	{
+		y -= KOOPA_BBOX_HEIGHT;
+		this->SetState(KOOPA_STATE_WALKING_LEFT);
+		return;
+	}
 
 	CGameObject::Update(dt, coObjects);
 	CCollision::GetInstance()->Process(this, dt, coObjects);
@@ -66,16 +72,19 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void CKoopas::Render()
 {
 	int aniId = ID_ANI_KOOPA_WALKING_LEFT;
-	if (state == KOOPA_STATE_DIE)
+	if (state == KOOPA_STATE_HYPE || state == KOOPA_STATE_HYPE_FAST_LEFT || state == KOOPA_STATE_HYPE_FAST_RIGHT)
 	{
-		aniId = ID_ANI_KOOPA_DIE;
+		aniId = ID_ANI_KOOPA_HYPER;
 	}
-	else if (vx < 0)
+	else if (KOOPA_STATE_WALKING_LEFT)
 	{
 		aniId = ID_ANI_KOOPA_WALKING_LEFT;
 	}
-	else {
+	else if (KOOPA_STATE_WALKING_RIGHT){
 		aniId = ID_ANI_KOOPA_WALKING_RIGHT;
+	}
+	else if (KOOPA_STATE_UNSTABLE){
+		aniId = ID_ANI_KOOPA_BLINK;
 	}
 	/*else if (state == KOOPA_STATE_WALKING_LEFT) {
 		aniId = ID_ANI_KOOPA_WALKING_LEFT;
@@ -100,6 +109,11 @@ void CKoopas::SetState(int state)
 		vy = 0;
 		ay = 0;
 		break;
+	case KOOPA_STATE_HYPE:
+		hype_start = GetTickCount64();
+		y += KOOPA_BBOX_HEIGHT_HYPE;
+		vx = 0;
+		break;
 	case KOOPA_STATE_WALKING_LEFT:
 		vx = -KOOPA_WALKING_SPEED;
 		nx = -1;
@@ -107,6 +121,18 @@ void CKoopas::SetState(int state)
 	case KOOPA_STATE_WALKING_RIGHT:
 		vx = -KOOPA_WALKING_SPEED;
 		nx = 1;
+		break;
+	case KOOPA_STATE_HYPE_FAST_LEFT:
+		vx = -KOOPA_HYPE_FAST_SPEED;
+		nx = -1;
+		break;
+	case KOOPA_STATE_HYPE_FAST_RIGHT:
+		vx = KOOPA_HYPE_FAST_SPEED;
+		nx = 1;
+		break;
+	case KOOPA_STATE_UNSTABLE:
+		//vx = KOOPA_HYPE_FAST_SPEED;
+		//nx = 1;
 		break;
 	}
 }
