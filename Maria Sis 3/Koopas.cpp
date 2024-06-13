@@ -1,4 +1,5 @@
 #include "Koopas.h"
+#include "ReturnBox.h"
 
 CKoopas::CKoopas(float x, float y) :CGameObject(x, y)
 {
@@ -13,9 +14,9 @@ void CKoopas::GetBoundingBox(float& left, float& top, float& right, float& botto
 	if (state == KOOPA_STATE_HYPE || state == KOOPA_STATE_HYPE_FAST_LEFT || state == KOOPA_STATE_HYPE_FAST_RIGHT)
 	{
 		left = x - KOOPA_BBOX_WIDTH / 2;
-		top = y - KOOPA_BBOX_HEIGHT_DIE / 2;
+		top = y - KOOPA_BBOX_HEIGHT_HYPE / 2;
 		right = left + KOOPA_BBOX_WIDTH;
-		bottom = top + KOOPA_BBOX_HEIGHT_DIE;
+		bottom = top + KOOPA_BBOX_HEIGHT_HYPE;
 	}
 	else
 	{
@@ -39,13 +40,21 @@ void CKoopas::OnCollisionWith(LPCOLLISIONEVENT e)
 
 	if (e->ny != 0)
 	{
-		vy = 0;
+		vy = 0; 
 	}
 	else if (e->nx != 0)
 	{
 		vx = -vx;
 	}
 }
+void CKoopas::OnCollisionWithReturnBox(LPCOLLISIONEVENT e)
+{
+	CReturnBox* p = (CReturnBox*)e->obj;
+	//CGame::GetInstance()->InitiateSwitchScene(p->GetSceneId());
+
+
+}
+
 
 void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
@@ -57,11 +66,14 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		isDeleted = true;
 		return;
 	}
-	if ((state == KOOPA_STATE_HYPE) && (GetTickCount64() - hype_start > KOOPA_HYPE_TIMEOUT))
+	if ((state == KOOPA_STATE_HYPE))
 	{
-		y -= KOOPA_BBOX_HEIGHT;
-		this->SetState(KOOPA_STATE_WALKING_LEFT);
-		return;
+		//if (GetTickCount64() - hype_start > KOOPA_HYPE_TIMEOUT / 2) this->SetState(KOOPA_STATE_UNSTABLE);
+		if (GetTickCount64() - hype_start > KOOPA_HYPE_TIMEOUT) {
+			y -= KOOPA_BBOX_HEIGHT;
+			this->SetState(KOOPA_STATE_WALKING_LEFT);
+			return;
+		}
 	}
 
 	CGameObject::Update(dt, coObjects);
@@ -72,20 +84,30 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void CKoopas::Render()
 {
 	int aniId = ID_ANI_KOOPA_WALKING_LEFT;
-	if (state == KOOPA_STATE_HYPE || state == KOOPA_STATE_HYPE_FAST_LEFT || state == KOOPA_STATE_HYPE_FAST_RIGHT)
+	if (state == KOOPA_STATE_HYPE || state == KOOPA_STATE_ON_MARIO_HAND_LEFT || state == KOOPA_STATE_ON_MARIO_HAND_RIGHT)
+	{
+		if(GetTickCount64() - hype_start > KOOPA_HYPE_TIMEOUT / 2) aniId = ID_ANI_KOOPA_BLINK;
+		else aniId = ID_ANI_KOOPA_HYPER;
+	}
+	else if (state == KOOPA_STATE_HYPE_FAST_LEFT)
 	{
 		aniId = ID_ANI_KOOPA_HYPER;
 	}
-	else if (KOOPA_STATE_WALKING_LEFT)
+	else if (state == KOOPA_STATE_HYPE_FAST_RIGHT)
+	{
+		aniId = ID_ANI_KOOPA_HYPER;
+	}
+	else if (state == KOOPA_STATE_WALKING_LEFT)
 	{
 		aniId = ID_ANI_KOOPA_WALKING_LEFT;
 	}
-	else if (KOOPA_STATE_WALKING_RIGHT){
+	else if (state == KOOPA_STATE_WALKING_RIGHT){
 		aniId = ID_ANI_KOOPA_WALKING_RIGHT;
 	}
-	else if (KOOPA_STATE_UNSTABLE){
+	/*else if (KOOPA_STATE_UNSTABLE){
 		aniId = ID_ANI_KOOPA_BLINK;
-	}
+	}*/
+	
 	/*else if (state == KOOPA_STATE_WALKING_LEFT) {
 		aniId = ID_ANI_KOOPA_WALKING_LEFT;
 	}
@@ -131,8 +153,9 @@ void CKoopas::SetState(int state)
 		nx = 1;
 		break;
 	case KOOPA_STATE_UNSTABLE:
-		//vx = KOOPA_HYPE_FAST_SPEED;
-		//nx = 1;
+		//hype_start = GetTickCount64();
+		//y += KOOPA_BBOX_HEIGHT_HYPE;
+		//vx = 0;
 		break;
 	}
 }

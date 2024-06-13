@@ -48,7 +48,8 @@ void CSampleKeyHandler::OnKeyUp(int KeyCode)
 		mario->SetState(MARIO_STATE_SIT_RELEASE);
 		break;
 	case DIK_Z:
-		//mario->SetState(MARIO_STATE_HOLD_RELEASE);
+		//mario->SetState(MARIO_STATE_RELEASE_KOOPA);
+		DebugOut(L"RELASE KOOPA\n");
 		break;
 	}
 }
@@ -59,7 +60,7 @@ void CSampleKeyHandler::KeyState(BYTE* states)
 	CMario* mario = (CMario*)((LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene())->GetPlayer();
 
 	if (game->IsKeyDown(DIK_Z)) {
-		//mario->SetState(HOLD_KOOPA);
+		//mario->SetState(MARIO_STATE_HOLD_KOOPA);
 		DebugOut(L"HOLD STATE MARIO\n");
 	}
 

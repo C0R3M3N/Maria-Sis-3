@@ -22,6 +22,8 @@
 #define KOOPA_STATE_UNSTABLE 400
 #define KOOPA_STATE_HYPE_FAST_LEFT 700
 #define KOOPA_STATE_HYPE_FAST_RIGHT 800
+#define KOOPA_STATE_ON_MARIO_HAND_LEFT 900
+#define KOOPA_STATE_ON_MARIO_HAND_RIGHT 1000
 
 #define ID_ANI_KOOPA_WALKING_LEFT 7000
 #define ID_ANI_KOOPA_WALKING_RIGHT 7002
@@ -48,6 +50,7 @@ protected:
 
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 
+	virtual void OnCollisionWithReturnBox(LPCOLLISIONEVENT e);
 public:
 	CKoopas(float x, float y);
 	virtual void SetState(int state);
